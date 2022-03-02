@@ -1,0 +1,9 @@
+About Crypto Tracker
+Lazy Loading / Currency Symbols?
+Email Password Reset?
+Refactor & Add Comments
+Improve the Sign In Box Styling
+    Show Password Button is hidden (LOL)
+Create Coin Carousel Error Display
+Github 
+Hosting
