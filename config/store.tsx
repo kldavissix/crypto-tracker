@@ -41,4 +41,11 @@ export const useStore = create<ICryptoStore>((set) => ({
     favoritesOnly: false,
     setFavoritesOnly: (newFavoritesOnly) =>
         set({ favoritesOnly: newFavoritesOnly }),
+    windowWidth: 0,
+    setWindowWidth: (newWindowWidth) => set({ windowWidth: newWindowWidth }),
+    windowHeight: 0,
+    setWindowHeight: (newWindowHeight) =>
+        set({ windowHeight: newWindowHeight }),
+    pageSize: 3,
+    setPageSize: (newPageSize) => set({ pageSize: newPageSize }),
 }))

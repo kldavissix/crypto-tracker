@@ -55,7 +55,6 @@ const usePagination = ({
             return paginationLinkText
         })
 
-    // return [buttonLabels]
     return [buttonLabels, enableFwd, enableBack]
 }
 

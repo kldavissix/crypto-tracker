@@ -27,6 +27,12 @@ interface ICryptoStore {
     clearFavorites: () => void
     favoritesOnly: boolean
     setFavoritesOnly: (newFavoritesOnly: boolean) => void
+    windowWidth: number
+    setWindowWidth: (newWindowWidth: number) => void
+    windowHeight: number
+    setWindowHeight: (newWindowHeight: number) => void
+    pageSize: number,
+    setPageSize: (newPageSize: number) => void
 }
 
 
@@ -52,6 +58,7 @@ interface ICarousel {
     currencySymbol: unknown;
     isLoading: boolean;
     isError: boolean;
+    windowHeight: number
 }
 
 interface ICoinsFromAPI {
@@ -142,4 +149,9 @@ interface IToastConfig {
     description: string
     status: 'success' | 'warning' | 'error' | undefined
     isClosable: boolean
+}
+
+interface ICoinsTableRows {
+    coins: ICoinsInTable[],
+    handleCoinRowClicked: (id: string, symbol: string, favoriteAction: string) => void
 }

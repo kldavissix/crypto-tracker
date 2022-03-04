@@ -18,6 +18,7 @@ const Carousel = ({
     currencySymbol,
     isLoading,
     isError,
+    windowHeight,
 }: ICarousel) => {
     const items = trendingCoins?.map((coin: ITrendingCoin) => {
         const {
@@ -45,7 +46,12 @@ const Carousel = ({
                             },
                         }}
                     >
-                        <Image src={image} alt={name} h="60px" my="3" />
+                        <Image
+                            src={image}
+                            alt={name}
+                            h={windowHeight < 860 ? '50px' : '60px'}
+                            my="3"
+                        />
                     </motion.div>
                     <Box
                         display="flex"

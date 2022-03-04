@@ -1,5 +1,5 @@
 import Banner from '../components/Banner/Banner'
-import CoinsTable from '../components/CoinsTable'
+import CoinsTableContainer from '../components/CoinsTableContainer'
 
 const Home = () => {
     // Zustard Store
@@ -7,7 +7,7 @@ const Home = () => {
     return (
         <div>
             <Banner />
-            <CoinsTable />
+            <CoinsTableContainer />
         </div>
     )
 }

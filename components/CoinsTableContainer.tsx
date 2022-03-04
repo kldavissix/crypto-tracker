@@ -2,13 +2,11 @@ import {
     Input,
     VStack,
     Text,
-    Image,
     Table,
     Thead,
     Tr,
     Th,
     Tbody,
-    Td,
     Box,
     HStack,
     InputGroup,
@@ -30,15 +28,16 @@ import {
 import axios from 'axios'
 import { CoinList } from '../config/api'
 import { useQuery } from 'react-query'
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/router'
 import { useStore } from '../config/store'
 import { motion } from 'framer-motion'
-import { numberWithCommas, showToast } from '../config/utils'
+import { showToast } from '../config/utils'
 import { updateDBFavorites } from '../config/firebase'
 import { orderBy } from 'lodash'
 import useDebounce from '../hooks/useDebounce'
 import usePagination from '../hooks/usePagination'
+import CoinsTableRows from './CoinsTableRows'
 
 const CoinsTable = () => {
     // Zustard Store
@@ -58,6 +57,9 @@ const CoinsTable = () => {
         favorites,
         favoritesOnly,
         setFavoritesOnly,
+        windowHeight,
+        pageSize,
+        setPageSize,
     } = useStore()
 
     const router = useRouter()
@@ -67,9 +69,37 @@ const CoinsTable = () => {
     const firstRender = useRef(true)
     const searchField = useRef<HTMLInputElement>(null)
 
-    let favoriteCellClicked: string = ''
-
     const debouncedSearch = useDebounce({ value: search, delay: 500 })
+
+    // Set table page size based on window height
+
+    const determinePageSize = (): number => {
+        let newPageSize = 3
+
+        const pageSizeMap = new Map()
+        pageSizeMap.set(650, 4)
+        pageSizeMap.set(695, 5)
+        pageSizeMap.set(750, 6)
+        pageSizeMap.set(790, 7)
+        pageSizeMap.set(835, 8)
+        pageSizeMap.set(905, 9)
+        pageSizeMap.set(950, 10)
+
+        for (let [key, value] of Array.from(pageSizeMap.entries())) {
+            if (key < windowHeight) newPageSize = value
+            else break
+        }
+
+        return newPageSize
+    }
+
+    // Change page size & reset page number when window height changes
+
+    useEffect(() => {
+        const newPageSize = determinePageSize()
+        if (pageSize !== newPageSize) setPageNum(1)
+        setPageSize(newPageSize)
+    }, [windowHeight])
 
     // Reset page number when search/sort conditions change
 
@@ -81,7 +111,7 @@ const CoinsTable = () => {
         setPageNum(1)
     }, [debouncedSearch, sortField, sortDir, favoritesOnly, setPageNum])
 
-    const setCoinsToDisplay = () => {
+    const setCoinDataSet = () => {
         const lowerSearch = debouncedSearch.toLowerCase()
         const favoritesSet = new Set(favorites)
 
@@ -123,19 +153,27 @@ const CoinsTable = () => {
         fetchCoins
     )
     const allCoins: ICoinsFromAPI[] = data?.data
-    const coinsToDisplay: ICoinsInTable[] = setCoinsToDisplay()
+    const coinDataSet: ICoinsInTable[] = setCoinDataSet()
 
-    const pageSize = 8
     const maxLinks = 9
     const [buttonLabels, enableFwd, enableBack] = usePagination({
         pageNum,
-        itemCount: coinsToDisplay.length,
+        itemCount: coinDataSet.length,
         pageSize,
         maxLinks,
     })
 
-    const handleCoinRowClicked = (id: string, symbol: string) => {
-        if (favoriteCellClicked) {
+    const coinsToDisplay = coinDataSet?.slice(
+        (pageNum - 1) * pageSize,
+        (pageNum - 1) * pageSize + pageSize
+    )
+
+    const handleCoinRowClicked = (
+        id: string,
+        symbol: string,
+        favoriteAction: string
+    ) => {
+        if (favoriteAction) {
             if (!user) {
                 showToast({
                     id: `not-signed-in`,
@@ -144,7 +182,7 @@ const CoinsTable = () => {
                     isClosable: true,
                 })
 
-                favoriteCellClicked = ''
+                favoriteAction = ''
                 return
             }
 
@@ -152,12 +190,12 @@ const CoinsTable = () => {
                 updateDBFavorites({
                     userId: user.uid,
                     symbol,
-                    bAdd: favoriteCellClicked === 'add',
+                    bAdd: favoriteAction === 'add',
                     bDocExists: favorites.length > 0,
                 })
             }
 
-            favoriteCellClicked = ''
+            favoriteAction = ''
             return
         }
 
@@ -225,148 +263,8 @@ const CoinsTable = () => {
         )
     }
 
-    const createTableBody = () => {
-        return (
-            <Tbody>
-                {coinsToDisplay
-                    ?.slice(
-                        (pageNum - 1) * pageSize,
-                        (pageNum - 1) * pageSize + pageSize
-                    )
-                    .map((coin) => {
-                        const {
-                            id,
-                            name,
-                            symbol,
-                            image,
-                            current_price,
-                            price_change_percentage_24h,
-                            market_cap,
-                            isFavorite,
-                        } = coin
-
-                        let priceChange24HoursDisplay: string = `${price_change_percentage_24h?.toFixed(
-                            2
-                        )}%`
-
-                        if (priceChange24HoursDisplay === '-0.00%')
-                            priceChange24HoursDisplay =
-                                priceChange24HoursDisplay.replace('-', '')
-                        const loss = priceChange24HoursDisplay.startsWith('-')
-
-                        return (
-                            <Tr
-                                onClick={(e) =>
-                                    handleCoinRowClicked(id, symbol)
-                                }
-                                cursor="pointer"
-                                key={id}
-                                _hover={{ backgroundColor: '#222633' }}
-                            >
-                                {/* {Coin Column } */}
-
-                                <Td py="1.5" px={[0, 1, 1]}>
-                                    <HStack>
-                                        <Image
-                                            src={image}
-                                            alt={name}
-                                            display={[
-                                                'none',
-                                                'inline',
-                                                'inline',
-                                            ]}
-                                            h="30px"
-                                        />
-                                        <Box pl={[0, 1, 1]}>
-                                            <Text
-                                                fontWeight="semibold"
-                                                textTransform="uppercase"
-                                            >
-                                                {symbol}
-                                            </Text>
-                                            <Text
-                                                fontSize="sm"
-                                                fontWeight="light"
-                                                color="#A0AEC0"
-                                                textTransform="capitalize"
-                                            >
-                                                {id}
-                                            </Text>
-                                        </Box>
-                                    </HStack>
-                                </Td>
-
-                                {/* {Price Column } */}
-
-                                <Td>
-                                    <HStack
-                                        spacing="0"
-                                        justifyContent="flex-end"
-                                    >
-                                        {currencySymbol}
-                                        <Text>
-                                            {numberWithCommas(
-                                                current_price.toFixed(2)
-                                            )}
-                                        </Text>
-                                    </HStack>
-                                </Td>
-
-                                {/* {24hr Change Column } */}
-
-                                <Td isNumeric color={loss ? 'red' : 'default'}>
-                                    {priceChange24HoursDisplay}
-                                </Td>
-
-                                {/* {Market Cap Column } */}
-
-                                <Td>
-                                    <HStack
-                                        spacing="0"
-                                        justifyContent="flex-end"
-                                    >
-                                        {currencySymbol}
-                                        <Text>
-                                            {numberWithCommas(
-                                                market_cap
-                                                    .toString()
-                                                    .slice(0, -6)
-                                            )}
-                                            &nbsp;M
-                                        </Text>
-                                    </HStack>
-                                </Td>
-
-                                {/* {Favorites Column } */}
-
-                                <Td
-                                    onClick={() => {
-                                        favoriteCellClicked = isFavorite
-                                            ? 'remove'
-                                            : 'add'
-                                    }}
-                                >
-                                    <HStack justifyContent="center" spacing="0">
-                                        <StarIcon
-                                            p="0"
-                                            m="0"
-                                            color={
-                                                isFavorite
-                                                    ? '#EEBC1D'
-                                                    : 'default'
-                                            }
-                                        />
-                                    </HStack>
-                                </Td>
-                            </Tr>
-                        )
-                    })}
-            </Tbody>
-        )
-    }
-
     const createPaginationButtons = () => {
-        if (!coinsToDisplay?.length) return null
+        if (!coinDataSet?.length) return null
 
         const disabledButtonStyle = {
             color: '#62656D',
@@ -521,12 +419,17 @@ const CoinsTable = () => {
                     animate={{ opacity: [0, 1] }}
                     transition={{ duration: 0.24 }}
                     style={{ width: '100%' }}
-                    key={sortField + sortDir + pageNum + currency}
+                    key={sortField + sortDir + pageNum + currency + pageSize}
                 >
                     <Table size="sm" variant="simple">
                         {createTableColumnWidths()}
                         {createTableHeader()}
-                        {createTableBody()}
+                        <Tbody>
+                            <CoinsTableRows
+                                coins={coinsToDisplay}
+                                handleCoinRowClicked={handleCoinRowClicked}
+                            />
+                        </Tbody>
                     </Table>
                 </motion.div>
                 {createPaginationButtons()}

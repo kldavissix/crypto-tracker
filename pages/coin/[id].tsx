@@ -101,8 +101,10 @@ const CoinDetail = ({
             ? removeLinksFromDesc(description?.en.split('. ')[0])
             : ''
 
-    const marketCapRankDisplay = numberWithCommas(marketCapRank.toString())
-    const currentPriceDisplay = numberWithCommas(currentPrice.toFixed(2))
+    const marketCapRankDisplay = numberWithCommas(
+        (marketCapRank || 0).toString()
+    )
+    const currentPriceDisplay = numberWithCommas((currentPrice || 0).toFixed(2))
     const marketCapDisplay = `${numberWithCommas(
         marketCap.toString().slice(0, -6)
     )} M`

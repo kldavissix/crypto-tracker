@@ -6,15 +6,26 @@ import { useStore } from '../config/store'
 import { motion } from 'framer-motion'
 
 import AuthModal from './Authentication/AuthModal'
+import useWindowResize from '../hooks/useWindowResize'
+import useDebounce from '../hooks/useDebounce'
 
 const Header = () => {
     const router = useRouter()
 
     // Zustard Store
 
-    const { currency, setCurrency } = useStore()
+    const { currency, setCurrency, setWindowHeight } = useStore()
+
+    // Get window height for index page layout
+
+    const { height } = useWindowResize()
+    const debouncedHeight = useDebounce({ value: height, delay: 200 })
 
     const currencySelectBox = useRef<HTMLSelectElement>(null)
+
+    useEffect(() => {
+        setWindowHeight(debouncedHeight)
+    }, [debouncedHeight])
 
     // Make currency "sticky"
     // Force select box display update & save currency value to cookie
