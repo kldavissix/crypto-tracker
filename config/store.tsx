@@ -15,11 +15,20 @@ const initialCurrencySymbol =
 
 export const useStore = create<ICryptoStore>((set) => ({
     user: null,
-    setUser: (newUser) => set({ user: newUser }),
+    setUser: (newUser) => {
+        // Reset table when user changes
+        set({
+            pageNum: 1,
+            search: '',
+            sortField: 'market_cap',
+            sortDir: 'desc',
+            user: newUser,
+        })
+    },
     currency: initialCurrency,
     setCurrency: (newCurrency) => {
-        set({ currency: newCurrency })
         set({
+            currency: newCurrency,
             currencySymbol:
                 newCurrency === 'eur' ? <FaEuroSign /> : <FaDollarSign />,
         })
