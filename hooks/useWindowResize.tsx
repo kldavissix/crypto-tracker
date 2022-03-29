@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
-const useWindowResize = () => {
-    if (typeof window === 'undefined') return { width: 0, height: 0 }
+const useWindowResize = (): [number, number] => {
+    if (typeof window === 'undefined') return [0, 0]
 
     const [width, setWidth] = useState(window.innerWidth)
     const [height, setHeight] = useState(window.innerHeight)
@@ -19,10 +19,7 @@ const useWindowResize = () => {
         }
     }, [])
 
-    return {
-        width,
-        height,
-    }
+    return [width, height]
 }
 
 export default useWindowResize

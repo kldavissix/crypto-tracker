@@ -1,88 +1,87 @@
-import { HStack, Box, Select, Text } from '@chakra-ui/react'
-import { setCookies } from 'cookies-next'
-import { useRouter } from 'next/router'
-import { useRef, useEffect } from 'react'
-import { useStore } from '../config/store'
-import { motion } from 'framer-motion'
+import { HStack, Box, Select, Text } from "@chakra-ui/react";
+import { setCookies } from "cookies-next";
+import { useRouter } from "next/router";
+import { useRef, useEffect, useContext } from "react";
+import { useStore } from "../config/store";
+import { motion } from "framer-motion";
 
-import AuthModal from './Authentication/AuthModal'
-import useWindowResize from '../hooks/useWindowResize'
-import useDebounce from '../hooks/useDebounce'
+import AuthModal from "./Authentication/AuthModal";
+import useWindowResize from "../hooks/useWindowResize";
+import useDebounce from "../hooks/useDebounce";
+import { CurrencyContext } from "../config/CurrencyContext";
 
 const Header = () => {
-    const router = useRouter()
+  const router = useRouter();
 
-    // Zustard Store
+  // Zustard Store
 
-    const { currency, setCurrency, setWindowHeight } = useStore()
+  const { setWindowHeight } = useStore();
 
-    // Get window height for index page layout
+  const { ctxCurrency, setCtxCurrency, ctxCurrencyIcon } = useContext(
+    CurrencyContext
+  ) as ICurrencyContext;
 
-    const { height } = useWindowResize()
-    const debouncedHeight = useDebounce({ value: height, delay: 200 })
+  // Get window height for index page layout
 
-    const currencySelectBox = useRef<HTMLSelectElement>(null)
+  const [_, height] = useWindowResize();
+  const debouncedHeight = useDebounce({ value: height, delay: 300 });
 
-    useEffect(() => {
-        setWindowHeight(debouncedHeight)
-    }, [debouncedHeight])
+  const currencySelectBox = useRef<HTMLSelectElement>(null);
 
-    // Make currency "sticky"
-    // Force select box display update & save currency value to cookie
-    // Regular binding wouldn't work on page load
+  useEffect(() => {
+    setWindowHeight(debouncedHeight);
+  }, [debouncedHeight, setWindowHeight]);
 
-    useEffect(() => {
-        setCookies('cur', currency)
-        if (currencySelectBox && currencySelectBox.current) {
-            currencySelectBox.current.value = currency
-        }
-    }, [currency])
+  // Make currency "sticky"
+  // Force select box display update & save currency value to cookie
+  // Regular binding wouldn't work on page load
 
-    return (
-        <Box display="flex" justifyContent="center">
-            <HStack
-                justifyContent="space-between"
-                px="5"
-                py="2"
-                w="90%"
-                maxW="800px"
-            >
-                {/* Header Home Logo */}
+  useEffect(() => {
+    setCookies("cur", ctxCurrency);
+    if (currencySelectBox && currencySelectBox.current) {
+      currencySelectBox.current.value = ctxCurrency;
+    }
+  }, [ctxCurrency]);
 
-                <Box onClick={() => router.push('/')} cursor="pointer">
-                    <motion.div
-                        whileHover={{
-                            scale: 1.04,
-                            transition: {
-                                duration: 0.2,
-                            },
-                        }}
-                    >
-                        <Text color="#EEBC1D" fontSize="xl" fontWeight="bold">
-                            Crypto Tracker
-                        </Text>
-                    </motion.div>
-                </Box>
+  return (
+    <Box display="flex" justifyContent="center">
+      <HStack justifyContent="space-between" px="5" py="2" w="90%" maxW="800px">
+        {/* Header Home Logo */}
 
-                {/* Currency + Sign In & Out  */}
-
-                <HStack>
-                    <Select
-                        w="50"
-                        onChange={(e) => {
-                            setCurrency(e.target.value)
-                        }}
-                        ref={currencySelectBox}
-                    >
-                        <option value="usd" label="USD" />
-                        <option value="eur" label="EUR" />
-                    </Select>
-
-                    <AuthModal />
-                </HStack>
-            </HStack>
+        <Box onClick={() => router.push("/")} cursor="pointer">
+          <motion.div
+            whileHover={{
+              scale: 1.04,
+              transition: {
+                duration: 0.2,
+              },
+            }}
+          >
+            <Text color="#EEBC1D" fontSize="xl" fontWeight="bold">
+              Crypto Tracker
+            </Text>
+          </motion.div>
         </Box>
-    )
-}
 
-export default Header
+        {/* Currency + Sign In & Out  */}
+
+        <HStack>
+          <Select
+            w="50"
+            onChange={(e) => {
+              setCtxCurrency(e.target.value as TCurrency);
+            }}
+            ref={currencySelectBox}
+          >
+            <option value="usd" label="USD" />
+            <option value="eur" label="EUR" />
+          </Select>
+
+          <AuthModal />
+        </HStack>
+      </HStack>
+    </Box>
+  );
+};
+
+export default Header;
