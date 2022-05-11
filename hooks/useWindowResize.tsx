@@ -1,25 +1,25 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react"
 
 const useWindowResize = (): [number, number] => {
-    if (typeof window === 'undefined') return [0, 0]
+  const [width, setWidth] = useState(0)
+  const [height, setHeight] = useState(0)
 
-    const [width, setWidth] = useState(window.innerWidth)
-    const [height, setHeight] = useState(window.innerHeight)
+  const listener = () => {
+    setWidth(window.innerWidth)
+    setHeight(window.innerHeight)
+  }
 
-    const listener = () => {
-        setWidth(window.innerWidth)
-        setHeight(window.innerHeight)
+  useEffect(() => {
+    window.addEventListener("resize", listener)
+    listener()
+
+    return () => {
+      window.removeEventListener("resize", listener)
     }
+  }, [])
 
-    useEffect(() => {
-        window.addEventListener('resize', listener)
-
-        return () => {
-            window.removeEventListener('resize', listener)
-        }
-    }, [])
-
-    return [width, height]
+  if (typeof window === "undefined") return [0, 0]
+  return [width, height]
 }
 
 export default useWindowResize

@@ -1,25 +1,24 @@
-import { Text, VStack } from "@chakra-ui/react";
-import { useCallback, useContext, useEffect, useMemo } from "react";
-import Carousel from "./Carousel";
-import { useStore } from "../../config/store";
-import axios from "axios";
-import { TrendingCoins } from "../../config/api";
-import { useQuery } from "react-query";
-import { CurrencyContext } from "../../config/CurrencyContext";
-import { currencySymbol } from "../../config/utils";
+import { Text, VStack } from "@chakra-ui/react"
+import { useContext, useMemo } from "react"
+import Carousel from "./Carousel"
+import { useStore } from "../../config/store"
+import axios from "axios"
+import { TrendingCoins } from "../../config/api"
+import { useQuery } from "react-query"
+import { CurrencyContext } from "../../config/CurrencyContext"
 
 const Banner = () => {
-  const { windowHeight } = useStore();
+  const { windowHeight } = useStore()
   const { ctxCurrency, ctxCurrencyIcon } = useContext(
     CurrencyContext
-  ) as ICurrencyContext;
+  ) as ICurrencyContext
   // Trending coins API data fetching
 
   const { isLoading, isError, data } = useQuery(
     ["TrendingCoins", ctxCurrency],
     () => axios(TrendingCoins(ctxCurrency))
-  );
-  const trendingCoins = data?.data;
+  )
+  const trendingCoins = data?.data
 
   // Memoize carousel to keep it from rerendering/restarting
   // its animation on every render
@@ -34,7 +33,7 @@ const Banner = () => {
         isError={isError}
         windowHeight={windowHeight}
       />
-    );
+    )
   }, [
     trendingCoins,
     ctxCurrency,
@@ -42,7 +41,7 @@ const Banner = () => {
     isLoading,
     isError,
     windowHeight,
-  ]);
+  ])
 
   return (
     <VStack bgImage={"../../../banner2.jpg"} h={windowHeight < 860 ? 260 : 280}>
@@ -61,7 +60,7 @@ const Banner = () => {
       </VStack>
       {memoCarousel}
     </VStack>
-  );
-};
+  )
+}
 
-export default Banner;
+export default Banner

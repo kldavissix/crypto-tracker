@@ -1,6 +1,6 @@
-import { useRouter } from "next/router";
-import { HistoricalChart, SingleCoin } from "../../config/api";
-import axios from "axios";
+import Router from "next/router"
+import { HistoricalChart, SingleCoin } from "../../config/api"
+import axios from "axios"
 import {
   Box,
   Stack,
@@ -15,19 +15,19 @@ import {
   Td,
   Tbody,
   Button,
-} from "@chakra-ui/react";
-import { useContext, useEffect, useMemo } from "react";
-import htmlParse from "html-react-parser";
-import { isObject, numberWithCommas } from "../../config/utils";
-import { Line } from "react-chartjs-2";
-import { useStore } from "../../config/store";
-import { getCookie } from "cookies-next";
-import { updateDBFavorites } from "../../config/firebase";
-import { GetServerSideProps } from "next";
-import dayjs from "dayjs";
-import { motion } from "framer-motion";
-import NotFound from "../../components/NotFound";
-import { CurrencyContext } from "../../config/CurrencyContext";
+} from "@chakra-ui/react"
+import { useContext, useEffect } from "react"
+import htmlParse from "html-react-parser"
+import { isObject, numberWithCommas } from "../../config/utils"
+import { Line } from "react-chartjs-2"
+import { useStore } from "../../config/store"
+import { getCookie } from "cookies-next"
+import { updateDBFavorites } from "../../config/firebase"
+import { GetServerSideProps } from "next"
+import dayjs from "dayjs"
+import { motion } from "framer-motion"
+import NotFound from "../../components/NotFound"
+import { CurrencyContext } from "../../config/CurrencyContext"
 
 const CoinDetail = ({
   coinData,
@@ -37,30 +37,28 @@ const CoinDetail = ({
   marketCap,
   days,
 }: ICoinDetail) => {
-  const router = useRouter();
+  const { id, symbol, image, name, description } = coinData
 
-  const { id, symbol, image, name, description } = coinData;
-
-  const coinWebsite = coinData.links.homepage[0] || "";
+  const coinWebsite = coinData.links.homepage[0] || ""
 
   // Zustand Store
 
-  const { user, favorites } = useStore();
+  const { user, favorites } = useStore()
 
   const { ctxCurrency, ctxCurrencyIcon } = useContext(
     CurrencyContext
-  ) as ICurrencyContext;
+  ) as ICurrencyContext
 
-  const isFavorite = favorites.includes(symbol);
+  const isFavorite = favorites.includes(symbol)
 
   // Reload server side data when currency changes
 
   useEffect(() => {
-    router.replace(`/coin/${id}?d=${days}`);
-  }, [ctxCurrency, days, id]);
+    Router.replace(`/coin/${id}?d=${days}`)
+  }, [ctxCurrency, days, id])
 
   if (!chartData) {
-    return <NotFound type="coin" />;
+    return <NotFound type="coin" />
   }
 
   const handleToggleFavorite = () => {
@@ -70,50 +68,48 @@ const CoinDetail = ({
         symbol,
         bAdd: !isFavorite,
         bDocExists: favorites.length > 0,
-      });
+      })
     }
-  };
+  }
 
   const removeLinksFromDesc = (data: string) => {
-    const parsedData = htmlParse(data);
+    const parsedData = htmlParse(data)
     if (Array.isArray(parsedData)) {
       return parsedData.reduce((a, b) => {
         if (isObject(b) && b?.type === "a") {
           // Remove the link and get its inner text
-          return a + b.props.children;
+          return a + b.props.children
         }
-        return a + b;
-      }, "");
+        return a + b
+      }, "")
     }
-    return data;
-  };
+    return data
+  }
 
   const descWithoutLinks =
     description.en.length > 0
       ? removeLinksFromDesc(description?.en.split(". ")[0])
-      : "";
+      : ""
 
-  const marketCapRankDisplay = numberWithCommas(
-    (marketCapRank || 0).toString()
-  );
-  const currentPriceDisplay = numberWithCommas((currentPrice || 0).toFixed(2));
+  const marketCapRankDisplay = numberWithCommas((marketCapRank || 0).toString())
+  const currentPriceDisplay = numberWithCommas((currentPrice || 0).toFixed(2))
   const marketCapDisplay = `${numberWithCommas(
     marketCap.toString().slice(0, -6)
-  )} M`;
+  )} M`
 
   const chartLabels = () => {
     return chartData.map((price) => {
-      const date: Date = new Date(price[0]);
+      const date: Date = new Date(price[0])
       if (days === 1) {
         // Return time
-        return dayjs(date).format("h:mm A");
+        return dayjs(date).format("h:mm A")
       }
       // Return date
-      return dayjs(date).format("M/D/YY");
-    });
-  };
+      return dayjs(date).format("M/D/YY")
+    })
+  }
 
-  const chartDataSet = () => chartData.map((price) => price[1]);
+  const chartDataSet = () => chartData.map((price) => price[1])
 
   const chartDurationButtons = () => {
     const duration = new Map([
@@ -121,10 +117,10 @@ const CoinDetail = ({
       ["30 Days", 30],
       ["3 Months", 90],
       ["1 Year", 365],
-    ]);
+    ])
 
     return Array.from(duration).map(([key, value]) => {
-      const active = days === value;
+      const active = days === value
 
       return (
         <Button
@@ -134,13 +130,13 @@ const CoinDetail = ({
           size="xs"
           fontSize={["xs", null, "sm"]}
           _focus={{}}
-          onClick={() => router.replace(`/coin/${id}?d=${value}`)}
+          onClick={() => Router.replace(`/coin/${id}?d=${value}`)}
         >
           {key}
         </Button>
-      );
-    });
-  };
+      )
+    })
+  }
 
   return (
     <Box display="flex" justifyContent="center" mt={["2", null, "5"]}>
@@ -166,7 +162,7 @@ const CoinDetail = ({
             cursor={coinWebsite.length ? "pointer" : "default"}
             onClick={() => {
               if (coinWebsite.length) {
-                window.open(coinWebsite, "_blank");
+                window.open(coinWebsite, "_blank")
               }
             }}
           >
@@ -278,10 +274,10 @@ const CoinDetail = ({
         )
       </Stack>
     </Box>
-  );
-};
+  )
+}
 
-export default CoinDetail;
+export default CoinDetail
 
 export const getServerSideProps: GetServerSideProps = async ({
   query,
@@ -290,40 +286,40 @@ export const getServerSideProps: GetServerSideProps = async ({
 }) => {
   // Get the query params
 
-  let coinId: string = "";
-  let d: string = "";
+  let coinId: string = ""
+  let d: string = ""
 
-  if (typeof query.id === "string") coinId = query.id;
-  if (typeof query.d === "string") d = query.d;
+  if (typeof query.id === "string") coinId = query.id
+  if (typeof query.d === "string") d = query.d
 
-  const days: number = ["1", "30", "90", "365"].includes(d) ? parseInt(d) : 1;
-  let currency: string = getCookie("cur", { req, res }) as string;
+  const days: number = ["1", "30", "90", "365"].includes(d) ? parseInt(d) : 1
+  let currency: string = getCookie("cur", { req, res }) as string
 
-  if (!["usd", "eur"].includes(currency)) currency = "usd";
+  if (!["usd", "eur"].includes(currency)) currency = "usd"
 
-  let coinData = null;
-  let chartData = null;
-  let marketCapRank = null;
-  let currentPrice = null;
-  let marketCap = null;
+  let coinData = null
+  let chartData = null
+  let marketCapRank = null
+  let currentPrice = null
+  let marketCap = null
 
   const fetchData = async () => {
-    const coinFetch = axios(SingleCoin(coinId));
-    const chartFetch = axios(HistoricalChart(coinId, days, currency));
+    const coinFetch = axios(SingleCoin(coinId))
+    const chartFetch = axios(HistoricalChart(coinId, days, currency))
 
     try {
-      return await Promise.all([coinFetch, chartFetch]);
+      return await Promise.all([coinFetch, chartFetch])
     } catch (e) {}
-  };
+  }
 
-  const data = await fetchData();
+  const data = await fetchData()
 
   if (data) {
-    coinData = data[0].data;
-    chartData = data[1].data.prices;
-    marketCapRank = coinData.market_cap_rank;
-    currentPrice = coinData.market_data.current_price[currency];
-    marketCap = coinData.market_data.market_cap[currency];
+    coinData = data[0].data
+    chartData = data[1].data.prices
+    marketCapRank = coinData.market_cap_rank
+    currentPrice = coinData.market_data.current_price[currency]
+    marketCap = coinData.market_data.market_cap[currency]
   }
 
   return {
@@ -335,5 +331,5 @@ export const getServerSideProps: GetServerSideProps = async ({
       marketCap,
       days,
     },
-  };
-};
+  }
+}

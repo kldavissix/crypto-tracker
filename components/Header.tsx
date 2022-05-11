@@ -1,53 +1,51 @@
-import { HStack, Box, Select, Text } from "@chakra-ui/react";
-import { setCookies } from "cookies-next";
-import { useRouter } from "next/router";
-import { useRef, useEffect, useContext } from "react";
-import { useStore } from "../config/store";
-import { motion } from "framer-motion";
+import { HStack, Box, Select, Text } from "@chakra-ui/react"
+import { setCookies } from "cookies-next"
+import { useRouter } from "next/router"
+import { useRef, useEffect, useContext } from "react"
+import { useStore } from "../config/store"
+import { motion } from "framer-motion"
 
-import AuthModal from "./Authentication/AuthModal";
-import useWindowResize from "../hooks/useWindowResize";
-import useDebounce from "../hooks/useDebounce";
-import { CurrencyContext } from "../config/CurrencyContext";
+import AuthModal from "./Authentication/AuthModal"
+import useWindowResize from "../hooks/useWindowResize"
+import useDebounce from "../hooks/useDebounce"
+import { CurrencyContext } from "../config/CurrencyContext"
 
 const Header = () => {
-  const router = useRouter();
+  const router = useRouter()
 
   // Zustard Store
 
-  const { setWindowHeight } = useStore();
+  const { setWindowHeight } = useStore()
 
   const { ctxCurrency, setCtxCurrency, ctxCurrencyIcon } = useContext(
     CurrencyContext
-  ) as ICurrencyContext;
+  ) as ICurrencyContext
 
   // Get window height for index page layout
 
-  const [_, height] = useWindowResize();
-  const debouncedHeight = useDebounce({ value: height, delay: 300 });
+  const [_, height] = useWindowResize()
+  const debouncedHeight = useDebounce({ value: height, delay: 300 })
 
-  const currencySelectBox = useRef<HTMLSelectElement>(null);
+  const currencySelectBox = useRef<HTMLSelectElement>(null)
 
   useEffect(() => {
-    setWindowHeight(debouncedHeight);
-  }, [debouncedHeight, setWindowHeight]);
+    setWindowHeight(debouncedHeight)
+  }, [debouncedHeight, setWindowHeight])
 
   // Make currency "sticky"
   // Force select box display update & save currency value to cookie
   // Regular binding wouldn't work on page load
 
   useEffect(() => {
-    setCookies("cur", ctxCurrency);
+    setCookies("cur", ctxCurrency)
     if (currencySelectBox && currencySelectBox.current) {
-      currencySelectBox.current.value = ctxCurrency;
+      currencySelectBox.current.value = ctxCurrency
     }
-  }, [ctxCurrency]);
+  }, [ctxCurrency])
 
   return (
     <Box display="flex" justifyContent="center">
       <HStack justifyContent="space-between" px="5" py="2" w="90%" maxW="800px">
-        {/* Header Home Logo */}
-
         <Box onClick={() => router.push("/")} cursor="pointer">
           <motion.div
             whileHover={{
@@ -68,8 +66,8 @@ const Header = () => {
         <HStack>
           <Select
             w="50"
-            onChange={(e) => {
-              setCtxCurrency(e.target.value as TCurrency);
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+              setCtxCurrency(e.target.value as TCurrency)
             }}
             ref={currencySelectBox}
           >
@@ -81,7 +79,7 @@ const Header = () => {
         </HStack>
       </HStack>
     </Box>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header
